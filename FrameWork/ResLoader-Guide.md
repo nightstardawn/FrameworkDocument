@@ -126,22 +126,25 @@ UIManager.Instance.HideWindow<LobbyWindow>();
 
 ### PrefabPath 路径转换
 
-UIWindow 中使用路径格式设置 `Config.PrefabPath`，`ResLoaderUIWindowLoader` 内部自动将 `/` 转为 `_` 作为 YooAsset 地址：
+所有资源路径统一使用 `"文件夹/文件名"` 格式，`YooAssetProvider` 内部自动将 `/` 转为 `_` 作为 YooAsset 地址：
 
 ```csharp
 protected override void InitConfig()
 {
     // 代码中写路径格式（直觉清晰）
     Config.PrefabPath = "Lobby/LobbyWindow";
-    // 内部自动转为 YooAsset 地址："Lobby_LobbyWindow"
+    // YooAssetProvider 内部自动转为 YooAsset 地址："Lobby_LobbyWindow"
     // 对应 Prefab 文件名：Lobby_LobbyWindow.prefab
 }
 ```
 
-| Config.PrefabPath | YooAsset 地址 | Prefab 文件名 |
-|-------------------|--------------|--------------|
+| 代码中传入路径 | YooAsset 实际地址 | Prefab 文件名 |
+|---------------|-----------------|--------------|
 | `"Shop/ShopWindow"` | `Shop_ShopWindow` | `Shop_ShopWindow.prefab` |
 | `"Battle/HUD"` | `Battle_HUD` | `Battle_HUD.prefab` |
+| `"Effect/Explosion"` | `Effect_Explosion` | `Effect_Explosion.prefab` |
+
+路径转换统一在 `YooAssetProvider` 中完成，所有使用 ResLoader 的模块（UIManager、GameObjectPoolManager 等）均无需单独处理。
 
 `ResLoaderUIWindowLoader` 内部持有名为 `"UIWindow"` 的 ResLoader（liveTime=30s），自动管理窗口 Prefab 的加载与释放。
 
@@ -233,7 +236,7 @@ public interface IAssetProvider
 **YooAssetProvider**
 
 - 使用 YooAsset 2.3.x `ResourcePackage.LoadAssetAsync` 加载
-- 路径格式取决于 Collector 的 Address Rule 设置
+- 内部自动将路径中的 `/` 转为 `_`（如 `"Effect/Explosion"` → `"Effect_Explosion"`）
 - 支持多包：优先从主包加载，未找到则查找其他已初始化的包
 - 编辑器下使用 `EditorSimulateMode`，无需打 AB 包
 

@@ -373,13 +373,15 @@ protected override void InitConfig()
 
 ### PrefabPath 与资源地址的关系
 
-代码中 `Config.PrefabPath` 使用路径格式书写（`"文件夹/文件名"`），`ResLoaderUIWindowLoader` 内部自动将 `/` 转换为 `_` 后作为 YooAsset 资源地址：
+代码中 `Config.PrefabPath` 使用路径格式书写（`"文件夹/文件名"`），`YooAssetProvider` 内部自动将 `/` 转换为 `_` 后作为 YooAsset 资源地址：
 
 | Config.PrefabPath | 转换后资源地址 | 对应 Prefab 文件名 |
 |-------------------|--------------|-------------------|
 | `"Shop/ShopWindow"` | `Shop_ShopWindow` | `Shop_ShopWindow.prefab` |
 | `"Battle/HUD"` | `Battle_HUD` | `Battle_HUD.prefab` |
 | `"Test/TestPanel"` | `Test_TestPanel` | `Test_TestPanel.prefab` |
+
+路径转换统一在 `YooAssetProvider` 中完成，所有使用 ResLoader 的模块（UIManager、GameObjectPoolManager 等）均无需单独处理。
 
 ### 默认加载器
 

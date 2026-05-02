@@ -38,6 +38,8 @@ public enum E_LOG_MODULE
     Audio     = 1 << 3,
     Timer     = 1 << 4,
     Event     = 1 << 5,
+    Res       = 1 << 6,
+    Pool      = 1 << 7,
 }
 ```
 
@@ -87,7 +89,7 @@ public enum E_LOG_MODULE
 public enum E_LOG_MODULE
 {
     // ... 已有模块
-    Physics = 1 << 6,  // 新增
+    MyModule = 1 << 8,  // 新增（下一个可用位）
 }
 ```
 
