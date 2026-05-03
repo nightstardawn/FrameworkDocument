@@ -17,10 +17,12 @@
 `AudioManager` 依赖 `ResLoaderManager` 进行音频资源加载。使用前请确保：
 
 ```csharp
-// 初始化资源加载器（二选一）
-ResLoaderManager.Instance.Init(new ResourcesAssetProvider());
+// 初始化资源加载器（按需注册 Provider）
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.Resources, new ResourcesAssetProvider());
 // 或
-ResLoaderManager.Instance.Init(new YooAssetProvider(packageName));
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.YooAsset, new YooAssetProvider(packageName));
+// 注册完成后初始化
+ResLoaderManager.Instance.Init();
 ```
 
 `AudioManager` 首次访问 `Instance` 时会自动初始化，无需手动创建。

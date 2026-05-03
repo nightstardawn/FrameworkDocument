@@ -8,7 +8,8 @@
 
 ```csharp
 // 使用 YooAsset 加载 UI Prefab（推荐）
-ResLoaderManager.Instance.Init(new YooAssetProvider("DefaultPackage"));
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.YooAsset, new YooAssetProvider("DefaultPackage"));
+ResLoaderManager.Instance.Init(E_ASSET_PROVIDER.YooAsset);
 UIManager.Instance.Init(new ResLoaderUIWindowLoader());
 
 // 或使用 Resources 加载（无需额外配置）
@@ -393,7 +394,8 @@ protected override void InitConfig()
 
 ```csharp
 // 初始化
-ResLoaderManager.Instance.Init(new YooAssetProvider("DefaultPackage"));
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.YooAsset, new YooAssetProvider("DefaultPackage"));
+ResLoaderManager.Instance.Init(E_ASSET_PROVIDER.YooAsset);
 UIManager.Instance.Init(new ResLoaderUIWindowLoader());
 ```
 

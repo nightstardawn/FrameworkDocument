@@ -5,14 +5,22 @@
 ```
 业务层 (UI / Audio / Battle / 各模块)
     │
-ResLoader (每个子系统独立实例，资源隔离)
+ResLoader (每个子系统独立实例，资源隔离，可指定默认 Provider)
     │
-ResLoaderManager (全局单例，对象池，定时清理)
+ResLoaderManager (全局单例，对象池，定时清理，管理多个 Provider)
     │
 IAssetProvider (底层抽象)
     ├── YooAssetProvider (YooAsset 2.3.x)
     └── ResourcesAssetProvider (Resources.LoadAsync)
 ```
+
+支持 **双 Provider 共存**，通过三级优先级选择使用哪个 Provider：
+
+1. **单次调用指定** — 每个 Load 方法可传入 `providerType` 参数
+2. **子加载器默认** — `GetResLoader()` 可指定该加载器的默认 Provider
+3. **全局默认** — `ResLoaderManager.Init()` 设定全局默认 Provider
+
+不传 `providerType` 参数时自动使用更高层级的默认值，**完全向后兼容**。
 
 ## 快速开始
 
@@ -27,6 +35,10 @@ var audioLoader  = ResLoaderManager.Instance.GetResLoader("Audio");
 
 // 可自定义资源存活宽限时间（默认5秒）
 var uiLoader = ResLoaderManager.Instance.GetResLoader("UI", liveTime: 30f);
+
+// 可指定该加载器的默认 Provider（不传则使用全局默认）
+var configLoader = ResLoaderManager.Instance.GetResLoader("Config", 30f,
+    defaultProvider: E_ASSET_PROVIDER.Resources);
 ```
 
 ### 加载资源
@@ -44,6 +56,18 @@ loader.LoadPrefabAsync(this, "Enemy", (asset, userData) =>
     var config = userData as EnemyConfig;
     var go = Instantiate(asset as GameObject);
 }, myConfig);
+
+// 显式指定使用 Resources 加载
+loader.LoadPrefabAsync(this, "Config/DefaultConfig", (asset, _) =>
+{
+    // ...
+}, providerType: E_ASSET_PROVIDER.Resources);
+
+// 显式指定使用 YooAsset 加载
+loader.LoadAudioClipAsync(this, "Audio/BGM_Main", (asset, _) =>
+{
+    // ...
+}, providerType: E_ASSET_PROVIDER.YooAsset);
 ```
 
 ### 释放资源
@@ -84,8 +108,10 @@ ResLoaderManager.Instance.ForceClearMemory();
 所有方法签名一致：
 
 ```csharp
-void LoadXxxAsync(object lifeRef, string path, Action<UnityEngine.Object, object> onLoaded, object userData = null)
+void LoadXxxAsync(object lifeRef, string path, Action<UnityEngine.Object, object> onLoaded, object userData = null, E_ASSET_PROVIDER? providerType = null)
 ```
+
+`providerType` 为可选参数，不传时按三级优先级自动选择 Provider。
 
 ## 业务层使用示例
 
@@ -203,17 +229,38 @@ loaderB.LoadPrefabAsync(objB, "SharedPrefab", onLoadedB);
 
 ## 初始化配置
 
-### ResLoaderManager 初始化（二选一）
+### ResLoaderManager 初始化
+
+先通过 `RegisterProvider` 注册需要的 Provider，再调用 `Init()` 完成初始化：
 
 ```csharp
-// 方式一：使用 YooAsset（推荐，需先完成 YooAsset 包初始化）
-ResLoaderManager.Instance.Init(new YooAssetProvider("DefaultPackage"));
+// 推荐：注册两个 Provider，开发者按需选择
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.Resources, new ResourcesAssetProvider());
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.YooAsset, new YooAssetProvider("DefaultPackage"));
+ResLoaderManager.Instance.Init(E_ASSET_PROVIDER.YooAsset);
 
-// 方式二：使用 Resources（无需额外配置）
-ResLoaderManager.Instance.Init(new ResourcesAssetProvider());
+// 只注册 YooAsset
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.YooAsset, new YooAssetProvider("DefaultPackage"));
+ResLoaderManager.Instance.Init(E_ASSET_PROVIDER.YooAsset);
 
-// 不传参数默认使用 ResourcesAssetProvider
+// 只注册 Resources
+ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.Resources, new ResourcesAssetProvider());
+ResLoaderManager.Instance.Init(E_ASSET_PROVIDER.Resources);
+
+// 不注册任何 Provider，默认使用 ResourcesAssetProvider
 ResLoaderManager.Instance.Init();
+```
+
+> **注意**：`RegisterProvider()` 必须在 `Init()` 之前调用，Init 后注册会报错。
+
+### E_ASSET_PROVIDER 枚举
+
+```csharp
+public enum E_ASSET_PROVIDER
+{
+    Resources,  // Unity Resources 系统
+    YooAsset    // YooAsset 资源包系统
+}
 ```
 
 ### IAssetProvider 底层抽象
@@ -252,8 +299,10 @@ public class GameStart : MonoBehaviour
         // 1. YooAsset 初始化（含三步激活 manifest）
         yield return InitYooAsset();
 
-        // 2. 资源管理器
-        ResLoaderManager.Instance.Init(new YooAssetProvider("DefaultPackage"));
+        // 2. 资源管理器（注册 Provider 后初始化）
+        ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.Resources, new ResourcesAssetProvider());
+        ResLoaderManager.Instance.RegisterProvider(E_ASSET_PROVIDER.YooAsset, new YooAssetProvider("DefaultPackage"));
+        ResLoaderManager.Instance.Init(E_ASSET_PROVIDER.YooAsset);
 
         // 3. UI 框架
         UIManager.Instance.Init(new ResLoaderUIWindowLoader());
@@ -312,16 +361,22 @@ yield return manifestOp;
 
 | 方法 | 说明 |
 |------|------|
-| `Init(IAssetProvider)` | 初始化（null 默认 ResourcesAssetProvider） |
-| `GetResLoader(name, liveTime)` | 获取/创建子系统加载器 |
-| `OnChangeScene(callback)` | 场景切换深度清理 |
+| `RegisterProvider(type, provider)` | 注册 Provider（必须在 Init 之前调用） |
+| `Init(defaultProvider)` | 初始化，设定默认 Provider 类型 |
+| `GetResLoader(name, liveTime, defaultProvider)` | 获取/创建子系统加载器（可指定默认 Provider） |
+| `OnChangeScene(callback)` | 场景切换深度清理（遍历所有已注册 Provider） |
 | `ForceClearMemory()` | 强制 GC + UnloadUnusedAssets |
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `IsInitialized` | bool | 是否已初始化 |
+| `DefaultProviderType` | E_ASSET_PROVIDER | 全局默认 Provider 类型 |
 
 ### ResLoader（子系统加载器）
 
 | 方法 | 说明 |
 |------|------|
-| `LoadAsync<T>(lifeRef, path, onLoaded, userData)` | 泛型异步加载 |
+| `LoadAsync<T>(lifeRef, path, onLoaded, userData, providerType)` | 泛型异步加载 |
 | `LoadPrefabAsync(...)` | 加载 Prefab |
 | `LoadTextureAsync(...)` | 加载 Texture2D |
 | `LoadSpriteAsync(...)` | 加载 Sprite |
