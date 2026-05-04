@@ -1,5 +1,7 @@
 # 一、git 忽略某个目录或文件不上传
 
+这部分主要是在 .gitignore 文件中添加需要忽略的目录或文件路径
+
 解决方法：https://blog.csdn.net/sunxiaoju/article/details/86495234
 
 # 二、大于 100MB 文件上传的解决办法
