@@ -84,7 +84,7 @@ GameObjectPoolManager.Instance.Pop("NPC/Villager", (npc) =>
 | 子弹正在飞行 | 停止飞行协程、清空目标引用 |
 | 特效绑定了跟随 | 解除跟随绑定 |
 | 音效正在播放 | `AudioSource.Stop()` |
-| 对象注册了事件 | `EventCenter.RemoveListener` |
+| 对象注册了事件 | `EventCenter.RemoveEvent` |
 
 如果对象是无状态的（纯视觉装饰物），`onForceRecycle` 可以不传。
 
@@ -158,7 +158,7 @@ info.attacker = player;
 info.target = enemy;
 
 // 传递使用...
-EventCenter.Instance.Trigger(EventType.OnDamage, info);
+EventCenter.Instance.TriggerEvent(EventType.OnDamage, info);
 
 // 归还（自动调用 ResetInfo，无需手动清理）
 _damagePool.Push(info);

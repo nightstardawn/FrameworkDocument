@@ -98,12 +98,12 @@ SceneManager.Instance.UnloadSceneAdditive("EnvironmentScene");
 监听示例：
 
 ```csharp
-EventCenter.Instance.AddListener<string>(EventType.BeforeSceneUnload, sceneName =>
+EventCenter.Instance.AddEvent<string>(EventType.BeforeSceneUnload, sceneName =>
 {
     // 旧场景即将卸载，执行清理
 });
 
-EventCenter.Instance.AddListener<string>(EventType.AfterSceneLoaded, sceneName =>
+EventCenter.Instance.AddEvent<string>(EventType.AfterSceneLoaded, sceneName =>
 {
     // 新场景已就绪，执行初始化
 });

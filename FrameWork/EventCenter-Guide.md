@@ -31,46 +31,46 @@ public static class EventType
 
 ```csharp
 // 无参事件
-EventCenter.Instance.AddListener(EventType.PlayerDead, OnPlayerDead);
+EventCenter.Instance.AddEvent(EventType.PlayerDead, OnPlayerDead);
 
 // 带参数事件
-EventCenter.Instance.AddListener<int>(EventType.ScoreChanged, OnScoreChanged);
+EventCenter.Instance.AddEvent<int>(EventType.ScoreChanged, OnScoreChanged);
 ```
 
 ### 3. 触发事件
 
 ```csharp
 // 无参
-EventCenter.Instance.Trigger(EventType.PlayerDead);
+EventCenter.Instance.TriggerEvent(EventType.PlayerDead);
 
 // 带参数
-EventCenter.Instance.Trigger<int>(EventType.ScoreChanged, 100);
+EventCenter.Instance.TriggerEvent<int>(EventType.ScoreChanged, 100);
 ```
 
 ### 4. 移除监听
 
 ```csharp
-EventCenter.Instance.RemoveListener(EventType.PlayerDead, OnPlayerDead);
-EventCenter.Instance.RemoveListener<int>(EventType.ScoreChanged, OnScoreChanged);
+EventCenter.Instance.RemoveEvent(EventType.PlayerDead, OnPlayerDead);
+EventCenter.Instance.RemoveEvent<int>(EventType.ScoreChanged, OnScoreChanged);
 ```
 
 ---
 
 ## API 一览
 
-### 添加监听（AddListener）
+### 添加监听（AddEvent）
 
 | 方法签名 | 说明 |
 |---------|------|
-| `AddListener(int eventId, Action callback)` | 无参 |
-| `AddListener<T>(int eventId, Action<T> callback)` | 1 个参数 |
-| `AddListener<T1, T2>(int eventId, Action<T1, T2> callback)` | 2 个参数 |
-| `AddListener<T1, T2, T3>(int eventId, Action<T1, T2, T3> callback)` | 3 个参数 |
-| `AddListener<T1, T2, T3, T4>(int eventId, Action<T1, T2, T3, T4> callback)` | 4 个参数 |
+| `AddEvent(int eventId, Action callback)` | 无参 |
+| `AddEvent<T>(int eventId, Action<T> callback)` | 1 个参数 |
+| `AddEvent<T1, T2>(int eventId, Action<T1, T2> callback)` | 2 个参数 |
+| `AddEvent<T1, T2, T3>(int eventId, Action<T1, T2, T3> callback)` | 3 个参数 |
+| `AddEvent<T1, T2, T3, T4>(int eventId, Action<T1, T2, T3, T4> callback)` | 4 个参数 |
 
-### 移除监听（RemoveListener）
+### 移除监听（RemoveEvent）
 
-签名与 AddListener 一一对应，参数相同。
+签名与 AddEvent 一一对应，参数相同。
 
 ### 触发事件（Trigger）
 
@@ -86,7 +86,7 @@ EventCenter.Instance.RemoveListener<int>(EventType.ScoreChanged, OnScoreChanged)
 
 | 方法 | 说明 |
 |------|------|
-| `RemoveAllListeners(int eventId)` | 移除某个事件的全部监听 |
+| `RemoveAllEvents(int eventId)` | 移除某个事件的全部监听 |
 | `Clear()` | 清空所有事件的所有监听 |
 
 ---
@@ -102,12 +102,12 @@ public static readonly int PlayerDead = GetIndex();
 // ---- UIManager（监听方） ----
 void OnEnable()
 {
-    EventCenter.Instance.AddListener(EventType.PlayerDead, ShowGameOverUI);
+    EventCenter.Instance.AddEvent(EventType.PlayerDead, ShowGameOverUI);
 }
 
 void OnDisable()
 {
-    EventCenter.Instance.RemoveListener(EventType.PlayerDead, ShowGameOverUI);
+    EventCenter.Instance.RemoveEvent(EventType.PlayerDead, ShowGameOverUI);
 }
 
 void ShowGameOverUI()
@@ -118,18 +118,18 @@ void ShowGameOverUI()
 // ---- AudioManager（监听方） ----
 void OnEnable()
 {
-    EventCenter.Instance.AddListener(EventType.PlayerDead, PlayDeathSound);
+    EventCenter.Instance.AddEvent(EventType.PlayerDead, PlayDeathSound);
 }
 
 void OnDisable()
 {
-    EventCenter.Instance.RemoveListener(EventType.PlayerDead, PlayDeathSound);
+    EventCenter.Instance.RemoveEvent(EventType.PlayerDead, PlayDeathSound);
 }
 
 // ---- Player（触发方） ----
 void Die()
 {
-    EventCenter.Instance.Trigger(EventType.PlayerDead);
+    EventCenter.Instance.TriggerEvent(EventType.PlayerDead);
 }
 ```
 
@@ -142,12 +142,12 @@ public static readonly int ScoreChanged = GetIndex();
 // ---- ScoreUI（监听方） ----
 void OnEnable()
 {
-    EventCenter.Instance.AddListener<int>(EventType.ScoreChanged, OnScoreChanged);
+    EventCenter.Instance.AddEvent<int>(EventType.ScoreChanged, OnScoreChanged);
 }
 
 void OnDisable()
 {
-    EventCenter.Instance.RemoveListener<int>(EventType.ScoreChanged, OnScoreChanged);
+    EventCenter.Instance.RemoveEvent<int>(EventType.ScoreChanged, OnScoreChanged);
 }
 
 void OnScoreChanged(int newScore)
@@ -159,7 +159,7 @@ void OnScoreChanged(int newScore)
 void AddScore(int amount)
 {
     _totalScore += amount;
-    EventCenter.Instance.Trigger<int>(EventType.ScoreChanged, _totalScore);
+    EventCenter.Instance.TriggerEvent<int>(EventType.ScoreChanged, _totalScore);
 }
 ```
 
@@ -172,13 +172,13 @@ public static readonly int DamageDealt = GetIndex();
 // ---- DamagePopup（监听方） ----
 void OnEnable()
 {
-    EventCenter.Instance.AddListener<Vector3, int, bool>(
+    EventCenter.Instance.AddEvent<Vector3, int, bool>(
         EventType.DamageDealt, ShowDamageNumber);
 }
 
 void OnDisable()
 {
-    EventCenter.Instance.RemoveListener<Vector3, int, bool>(
+    EventCenter.Instance.RemoveEvent<Vector3, int, bool>(
         EventType.DamageDealt, ShowDamageNumber);
 }
 
@@ -190,7 +190,7 @@ void ShowDamageNumber(Vector3 position, int damage, bool isCritical)
 // ---- Combat（触发方） ----
 void DealDamage(Vector3 hitPos, int dmg, bool crit)
 {
-    EventCenter.Instance.Trigger<Vector3, int, bool>(
+    EventCenter.Instance.TriggerEvent<Vector3, int, bool>(
         EventType.DamageDealt, hitPos, dmg, crit);
 }
 ```
@@ -215,14 +215,14 @@ public class BattleHUDWindow : UIWindow
 {
     protected override void OnShow(IUIWindowParam param)
     {
-        EventCenter.Instance.AddListener<int>(EventType.PlayerHpChanged, OnHpChanged);
-        EventCenter.Instance.AddListener<int>(EventType.ScoreChanged, OnScoreChanged);
+        EventCenter.Instance.AddEvent<int>(EventType.PlayerHpChanged, OnHpChanged);
+        EventCenter.Instance.AddEvent<int>(EventType.ScoreChanged, OnScoreChanged);
     }
 
     protected override void AfterHide(IUIWindowParam param)
     {
-        EventCenter.Instance.RemoveListener<int>(EventType.PlayerHpChanged, OnHpChanged);
-        EventCenter.Instance.RemoveListener<int>(EventType.ScoreChanged, OnScoreChanged);
+        EventCenter.Instance.RemoveEvent<int>(EventType.PlayerHpChanged, OnHpChanged);
+        EventCenter.Instance.RemoveEvent<int>(EventType.ScoreChanged, OnScoreChanged);
     }
 
     void OnHpChanged(int hp) { /* 刷新血条 */ }
@@ -234,9 +234,9 @@ public class BattleHUDWindow : UIWindow
 
 ## 注意事项
 
-1. **泛型类型必须匹配**：`AddListener<int>` 注册的事件，必须用 `Trigger<int>` 触发，类型不一致会静默失败
+1. **泛型类型必须匹配**：`AddEvent<int>` 注册的事件，必须用 `Trigger<int>` 触发，类型不一致会静默失败
 2. **必须成对注册/注销**：在 `OnEnable`/`OnShow` 中注册，在 `OnDisable`/`AfterHide` 中注销，避免对象销毁后仍被回调
-3. **使用方法引用而非 Lambda**：Lambda 每次创建新委托实例，无法通过 `RemoveListener` 移除
+3. **使用方法引用而非 Lambda**：Lambda 每次创建新委托实例，无法通过 `RemoveEvent` 移除
 4. **避免在回调中触发同一事件**：可能导致无限递归
 5. **切场景时考虑清理**：如果事件不需要跨场景保留，在场景卸载时调用 `Clear()`
 
@@ -244,13 +244,13 @@ public class BattleHUDWindow : UIWindow
 
 ```csharp
 // 正确：使用方法引用，可以移除
-EventCenter.Instance.AddListener(EventType.GamePause, OnPause);
-EventCenter.Instance.RemoveListener(EventType.GamePause, OnPause);
+EventCenter.Instance.AddEvent(EventType.GamePause, OnPause);
+EventCenter.Instance.RemoveEvent(EventType.GamePause, OnPause);
 
 // 错误：Lambda 无法移除
-EventCenter.Instance.AddListener(EventType.GamePause, () => { Time.timeScale = 0; });
+EventCenter.Instance.AddEvent(EventType.GamePause, () => { Time.timeScale = 0; });
 // 下面这行无法移除上面的 Lambda，因为是不同的委托实例
-EventCenter.Instance.RemoveListener(EventType.GamePause, () => { Time.timeScale = 0; });
+EventCenter.Instance.RemoveEvent(EventType.GamePause, () => { Time.timeScale = 0; });
 ```
 
 ---
