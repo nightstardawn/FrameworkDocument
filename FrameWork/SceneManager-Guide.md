@@ -88,22 +88,22 @@ SceneManager.Instance.UnloadSceneAdditive("EnvironmentScene");
 
 ## 事件
 
-在 EventType 中定义，通过 EventCenter 监听：
+在 ClientEvent 中定义，通过 EventCenter 监听：
 
 | 事件 | 触发时机 | 参数类型 | 参数说明 |
 |------|---------|---------|---------|
-| `EventType.BeforeSceneUnload` | 旧场景卸载前 | `string` | 旧场景名 |
-| `EventType.AfterSceneLoaded` | 新场景加载完成后 | `string` | 新场景名 |
+| `ClientEvent.BeforeSceneUnload` | 旧场景卸载前 | `string` | 旧场景名 |
+| `ClientEvent.AfterSceneLoaded` | 新场景加载完成后 | `string` | 新场景名 |
 
 监听示例：
 
 ```csharp
-EventCenter.Instance.AddEvent<string>(EventType.BeforeSceneUnload, sceneName =>
+EventCenter.Instance.AddEvent<string>(ClientEvent.BeforeSceneUnload, sceneName =>
 {
     // 旧场景即将卸载，执行清理
 });
 
-EventCenter.Instance.AddEvent<string>(EventType.AfterSceneLoaded, sceneName =>
+EventCenter.Instance.AddEvent<string>(ClientEvent.AfterSceneLoaded, sceneName =>
 {
     // 新场景已就绪，执行初始化
 });

@@ -4,10 +4,10 @@
 
 ### 1. 定义事件类型
 
-在 `EventType` 中声明事件，每个事件自动分配唯一 int ID：
+在 `ClientEvent` 中声明事件，每个事件自动分配唯一 int ID：
 
 ```csharp
-public static class EventType
+public static class ClientEvent
 {
     private static int _counter = 0;
     public static int GetIndex() => ++_counter;
@@ -31,27 +31,27 @@ public static class EventType
 
 ```csharp
 // 无参事件
-EventCenter.Instance.AddEvent(EventType.PlayerDead, OnPlayerDead);
+EventCenter.Instance.AddEvent(ClientEvent.PlayerDead, OnPlayerDead);
 
 // 带参数事件
-EventCenter.Instance.AddEvent<int>(EventType.ScoreChanged, OnScoreChanged);
+EventCenter.Instance.AddEvent<int>(ClientEvent.ScoreChanged, OnScoreChanged);
 ```
 
 ### 3. 触发事件
 
 ```csharp
 // 无参
-EventCenter.Instance.TriggerEvent(EventType.PlayerDead);
+EventCenter.Instance.TriggerEvent(ClientEvent.PlayerDead);
 
 // 带参数
-EventCenter.Instance.TriggerEvent<int>(EventType.ScoreChanged, 100);
+EventCenter.Instance.TriggerEvent<int>(ClientEvent.ScoreChanged, 100);
 ```
 
 ### 4. 移除监听
 
 ```csharp
-EventCenter.Instance.RemoveEvent(EventType.PlayerDead, OnPlayerDead);
-EventCenter.Instance.RemoveEvent<int>(EventType.ScoreChanged, OnScoreChanged);
+EventCenter.Instance.RemoveEvent(ClientEvent.PlayerDead, OnPlayerDead);
+EventCenter.Instance.RemoveEvent<int>(ClientEvent.ScoreChanged, OnScoreChanged);
 ```
 
 ---
@@ -96,18 +96,18 @@ EventCenter.Instance.RemoveEvent<int>(EventType.ScoreChanged, OnScoreChanged);
 ### 场景一：玩家死亡通知多个系统
 
 ```csharp
-// ---- EventType 定义 ----
+// ---- ClientEvent 定义 ----
 public static readonly int PlayerDead = GetIndex();
 
 // ---- UIManager（监听方） ----
 void OnEnable()
 {
-    EventCenter.Instance.AddEvent(EventType.PlayerDead, ShowGameOverUI);
+    EventCenter.Instance.AddEvent(ClientEvent.PlayerDead, ShowGameOverUI);
 }
 
 void OnDisable()
 {
-    EventCenter.Instance.RemoveEvent(EventType.PlayerDead, ShowGameOverUI);
+    EventCenter.Instance.RemoveEvent(ClientEvent.PlayerDead, ShowGameOverUI);
 }
 
 void ShowGameOverUI()
@@ -118,36 +118,36 @@ void ShowGameOverUI()
 // ---- AudioManager（监听方） ----
 void OnEnable()
 {
-    EventCenter.Instance.AddEvent(EventType.PlayerDead, PlayDeathSound);
+    EventCenter.Instance.AddEvent(ClientEvent.PlayerDead, PlayDeathSound);
 }
 
 void OnDisable()
 {
-    EventCenter.Instance.RemoveEvent(EventType.PlayerDead, PlayDeathSound);
+    EventCenter.Instance.RemoveEvent(ClientEvent.PlayerDead, PlayDeathSound);
 }
 
 // ---- Player（触发方） ----
 void Die()
 {
-    EventCenter.Instance.TriggerEvent(EventType.PlayerDead);
+    EventCenter.Instance.TriggerEvent(ClientEvent.PlayerDead);
 }
 ```
 
 ### 场景二：分数变化（带参数）
 
 ```csharp
-// ---- EventType ----
+// ---- ClientEvent ----
 public static readonly int ScoreChanged = GetIndex();
 
 // ---- ScoreUI（监听方） ----
 void OnEnable()
 {
-    EventCenter.Instance.AddEvent<int>(EventType.ScoreChanged, OnScoreChanged);
+    EventCenter.Instance.AddEvent<int>(ClientEvent.ScoreChanged, OnScoreChanged);
 }
 
 void OnDisable()
 {
-    EventCenter.Instance.RemoveEvent<int>(EventType.ScoreChanged, OnScoreChanged);
+    EventCenter.Instance.RemoveEvent<int>(ClientEvent.ScoreChanged, OnScoreChanged);
 }
 
 void OnScoreChanged(int newScore)
@@ -159,27 +159,27 @@ void OnScoreChanged(int newScore)
 void AddScore(int amount)
 {
     _totalScore += amount;
-    EventCenter.Instance.TriggerEvent<int>(EventType.ScoreChanged, _totalScore);
+    EventCenter.Instance.TriggerEvent<int>(ClientEvent.ScoreChanged, _totalScore);
 }
 ```
 
 ### 场景三：多参数事件（伤害信息）
 
 ```csharp
-// ---- EventType ----
+// ---- ClientEvent ----
 public static readonly int DamageDealt = GetIndex();
 
 // ---- DamagePopup（监听方） ----
 void OnEnable()
 {
     EventCenter.Instance.AddEvent<Vector3, int, bool>(
-        EventType.DamageDealt, ShowDamageNumber);
+        ClientEvent.DamageDealt, ShowDamageNumber);
 }
 
 void OnDisable()
 {
     EventCenter.Instance.RemoveEvent<Vector3, int, bool>(
-        EventType.DamageDealt, ShowDamageNumber);
+        ClientEvent.DamageDealt, ShowDamageNumber);
 }
 
 void ShowDamageNumber(Vector3 position, int damage, bool isCritical)
@@ -191,7 +191,7 @@ void ShowDamageNumber(Vector3 position, int damage, bool isCritical)
 void DealDamage(Vector3 hitPos, int dmg, bool crit)
 {
     EventCenter.Instance.TriggerEvent<Vector3, int, bool>(
-        EventType.DamageDealt, hitPos, dmg, crit);
+        ClientEvent.DamageDealt, hitPos, dmg, crit);
 }
 ```
 
@@ -215,14 +215,14 @@ public class BattleHUDWindow : UIWindow
 {
     protected override void OnShow(IUIWindowParam param)
     {
-        EventCenter.Instance.AddEvent<int>(EventType.PlayerHpChanged, OnHpChanged);
-        EventCenter.Instance.AddEvent<int>(EventType.ScoreChanged, OnScoreChanged);
+        EventCenter.Instance.AddEvent<int>(ClientEvent.PlayerHpChanged, OnHpChanged);
+        EventCenter.Instance.AddEvent<int>(ClientEvent.ScoreChanged, OnScoreChanged);
     }
 
     protected override void AfterHide(IUIWindowParam param)
     {
-        EventCenter.Instance.RemoveEvent<int>(EventType.PlayerHpChanged, OnHpChanged);
-        EventCenter.Instance.RemoveEvent<int>(EventType.ScoreChanged, OnScoreChanged);
+        EventCenter.Instance.RemoveEvent<int>(ClientEvent.PlayerHpChanged, OnHpChanged);
+        EventCenter.Instance.RemoveEvent<int>(ClientEvent.ScoreChanged, OnScoreChanged);
     }
 
     void OnHpChanged(int hp) { /* 刷新血条 */ }
@@ -244,13 +244,13 @@ public class BattleHUDWindow : UIWindow
 
 ```csharp
 // 正确：使用方法引用，可以移除
-EventCenter.Instance.AddEvent(EventType.GamePause, OnPause);
-EventCenter.Instance.RemoveEvent(EventType.GamePause, OnPause);
+EventCenter.Instance.AddEvent(ClientEvent.GamePause, OnPause);
+EventCenter.Instance.RemoveEvent(ClientEvent.GamePause, OnPause);
 
 // 错误：Lambda 无法移除
-EventCenter.Instance.AddEvent(EventType.GamePause, () => { Time.timeScale = 0; });
+EventCenter.Instance.AddEvent(ClientEvent.GamePause, () => { Time.timeScale = 0; });
 // 下面这行无法移除上面的 Lambda，因为是不同的委托实例
-EventCenter.Instance.RemoveEvent(EventType.GamePause, () => { Time.timeScale = 0; });
+EventCenter.Instance.RemoveEvent(ClientEvent.GamePause, () => { Time.timeScale = 0; });
 ```
 
 ---
@@ -260,5 +260,5 @@ EventCenter.Instance.RemoveEvent(EventType.GamePause, () => { Time.timeScale = 0
 ```
 Assets/Script/frame/Event/
 ├── EventCenter.cs      # 事件中心单例（继承 BaseManager<EventCenter>）
-└── EventType.cs        # 事件 ID 定义（静态类 + GetIndex 自增）
+└── ClientEvent.cs        # 事件 ID 定义（静态类 + GetIndex 自增）
 ```

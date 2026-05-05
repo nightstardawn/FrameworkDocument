@@ -158,7 +158,7 @@ info.attacker = player;
 info.target = enemy;
 
 // 传递使用...
-EventCenter.Instance.TriggerEvent(EventType.OnDamage, info);
+EventCenter.Instance.TriggerEvent(ClientEvent.OnDamage, info);
 
 // 归还（自动调用 ResetInfo，无需手动清理）
 _damagePool.Push(info);
